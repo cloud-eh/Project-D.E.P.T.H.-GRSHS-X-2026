@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Project D.E.P.T.H. — Aquaculture Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --deep:    #03111f;
+  --mid:     #062236;
+  --surface: #0a2e47;
+  --card:    #0d3556;
+  --border:  #1a4a6a;
+  --accent:  #00c4ff;
+  --accent2: #00ffd0;
+  --warn:    #ffb830;
+  --danger:  #ff4a4a;
+  --ok:      #2ecc71;
+  --text:    #cce8f4;
+  --muted:   #6a9bb5;
+  --white:   #f0faff;
+  --mono:    'Space Mono', monospace;
+  --sans:    'DM Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--deep);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(0,196,255,.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(0,255,208,.05) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 80% at 50% 110%, rgba(0,100,180,.1) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px);
+  pointer-events: none; z-index: 1;
+}
+.app { position: relative; z-index: 2; display: flex; flex-direction: column; min-height: 100vh; }
+
+/*HEADER NI GAW HAHAHHAHAHAHAHAHAHAHAHA*/
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(3,17,31,.9);
+  backdrop-filter: blur(14px);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo-block { display: flex; align-items: center; gap: 14px; }
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px;
+  box-shadow: 0 0 18px rgba(0,196,255,.35);
+}
+.logo-title { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--white); letter-spacing: 1.5px; }
+.logo-sub   { font-size: 11px; color: var(--muted); letter-spacing: .3px; margin-top: 1px; }
+.header-right { display: flex; align-items: center; gap: 20px; }
+.status-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 13px; border-radius: 20px;
+  border: 1px solid rgba(46,204,113,.4);
+  background: rgba(46,204,113,.07);
+  font-family: var(--mono); font-size: 11px; color: var(--ok);
+}
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--ok); box-shadow: 0 0 8px var(--ok);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+.mission-tag { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.mission-tag b { color: var(--accent); }
+
+/* ── POND TABS TABLET HSUAHUSHUASHAHS── */
+.pond-bar {
+  display: flex; align-items: center;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(6,34,54,.7);
+  overflow-x: auto;
+}
+.pond-tab {
+  padding: 14px 26px; cursor: pointer;
+  font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .5px;
+  color: var(--muted); border-bottom: 2px solid transparent;
+  transition: all .2s; white-space: nowrap;
+}
+.pond-tab:hover { color: var(--text); }
+.pond-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(0,196,255,.04); }
+.sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
+
+/* ── MAIN's wear ── */
+main { padding: 26px 32px; flex: 1; }
+
+/* ── alive ALERT enthusiastic── */
+.alert {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 18px; border-radius: 10px; margin-bottom: 22px;
+  border: 1px solid rgba(255,74,74,.4); background: rgba(255,74,74,.07);
+  animation: fadein .4s ease;
+}
+.alert.ok  { border-color: rgba(46,204,113,.35); background: rgba(46,204,113,.06); }
+.alert.warn{ border-color: rgba(255,184,48,.35); background: rgba(255,184,48,.06); }
+.alert-ico { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.alert-ttl { font-weight: 600; color: var(--white); font-size: 13px; }
+.alert-dsc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+@keyframes fadein { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── METRIC CARDS ── */
+.metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 22px; }
+.mcard {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px;
+  position: relative; overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.mcard:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,.3); }
+.mcard::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--mc, var(--accent)), transparent);
+}
+.mcard.danger  { --mc: var(--danger); border-color: rgba(255,74,74,.28); }
+.mcard.warning { --mc: var(--warn);   border-color: rgba(255,184,48,.28); }
+.mcard.ok      { --mc: var(--ok);     border-color: rgba(46,204,113,.22); }
+.mcard-bg { position: absolute; top: 12px; right: 14px; font-size: 30px; opacity: .1; }
+.mcard-label { font-size: 10px; font-family: var(--mono); color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.mcard-val   { font-family: var(--mono); font-size: 34px; font-weight: 700; color: var(--white); line-height: 1; }
+.mcard-unit  { font-size: 13px; color: var(--muted); margin-left: 4px; }
+.mcard-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 8px; font-size: 11px; padding: 3px 9px; border-radius: 20px;
+}
+.mcard-badge.danger  { background: rgba(255,74,74,.15);  color: #ff7070; }
+.mcard-badge.warning { background: rgba(255,184,48,.15); color: var(--warn); }
+.mcard-badge.ok      { background: rgba(46,204,113,.15); color: var(--ok); }
+.mcard-range { font-size: 11px; color: var(--muted); margin-top: 5px; }
+.spark { height: 34px; margin-top: 10px; width: 100%; display: block; }
+
+/* ── LAYOUT GRIDS na para bang ── */
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.span2 { grid-column: span 2; }
+
+/* ── PANEL sir pasara mi sir ── */
+.panel {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+}
+.ph {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+}
+.ph-title { font-family: var(--mono); font-size: 12px; letter-spacing: .7px; color: var(--white); font-weight: 700; }
+.ph-badge {
+  font-size: 10px; font-family: var(--mono); padding: 3px 8px; border-radius: 4px;
+  background: rgba(0,196,255,.11); color: var(--accent); border: 1px solid rgba(0,196,255,.2);
+}
+.pb { padding: 18px; }
+
+/* ── HEATMAP so hottt ── */
+.htabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.htab {
+  padding: 4px 13px; border-radius: 6px; font-size: 11px; font-family: var(--mono);
+  cursor: pointer; border: 1px solid var(--border); color: var(--muted); transition: all .2s;
+}
+.htab.active { background: rgba(0,196,255,.14); color: var(--accent); border-color: rgba(0,196,255,.4); }
+#heatCanvas { width: 100%; border-radius: 8px; display: block; }
+.hlegend { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 11px; color: var(--muted); }
+.lbar { flex: 1; height: 7px; border-radius: 4px; }
+.hmap-note { text-align: center; font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+/* ── TABLE chair ── */
+.scroll-area { max-height: 360px; overflow-y: auto; }
+.scroll-area::-webkit-scrollbar { width: 4px; }
+.scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th {
+  text-align: left; padding: 8px 10px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .7px;
+  color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap;
+  position: sticky; top: 0; background: var(--card);
+}
+td { padding: 7px 10px; border-bottom: 1px solid rgba(26,74,106,.4); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(0,196,255,.04); }
+.tag {
+  display: inline-block; padding: 2px 7px; border-radius: 4px;
+  font-size: 10px; font-family: var(--mono);
+}
+.tag-ok     { background: rgba(46,204,113,.15); color: var(--ok); }
+.tag-warn   { background: rgba(255,184,48,.15); color: var(--warn); }
+.tag-danger { background: rgba(255,74,74,.15);  color: #ff7070; }
+
+/* ── ROBOTics ── */
+.robot-viz { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 0 14px; }
+.asv {
+  width: 100px; height: 60px; position: relative; margin: 0 auto;
+}
+.asv-hull {
+  position: absolute; bottom: 0; width: 100px; height: 20px;
+  background: linear-gradient(180deg, #1a5070, #0a2e47);
+  border-radius: 10px; border: 1.5px solid var(--accent);
+  box-shadow: 0 0 14px rgba(0,196,255,.2);
+}
+.asv-hull::before,.asv-hull::after {
+  content: ''; position: absolute; top: -9px;
+  width: 26px; height: 9px;
+  background: linear-gradient(180deg,#0d3556,#1a5070);
+  border: 1px solid var(--accent); border-radius: 5px 5px 0 0;
+}
+.asv-hull::before { left: 12px; } .asv-hull::after { right: 12px; }
+.asv-pod {
+  position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%);
+  width: 28px; height: 14px;
+  background: var(--surface); border: 1px solid var(--accent2);
+  border-radius: 4px; box-shadow: 0 0 8px rgba(0,255,208,.2);
+}
+.asv-m { position: absolute; bottom: -4px; width: 12px; height: 8px; background: var(--mid); border: 1px solid var(--border); border-radius: 3px; }
+.asv-ml { left: 4px; } .asv-mr { right: 4px; }
+.wave {
+  width: 100px; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  border-radius: 2px; opacity: .5;
+  animation: wave 3s ease infinite;
+}
+@keyframes wave { 0%,100%{opacity:.3} 50%{opacity:.7} }
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(26,74,106,.35); }
+.stat-row:last-child { border-bottom: none; }
+.sk { font-size: 11px; color: var(--muted); }
+.sv { font-family: var(--mono); font-size: 12px; color: var(--white); }
+
+/* ── SUGGESTIONS pasara mi ── */
+.sug-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid rgba(26,74,106,.35); }
+.sug-item:last-child { border-bottom: none; }
+.si  { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+.st  { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 2px; }
+.sd  { font-size: 11px; color: var(--muted); }
+.sp  {
+  font-size: 10px; font-family: var(--mono); padding: 2px 6px;
+  border-radius: 3px; margin-left: 7px; vertical-align: middle;
+}
+.sp.high { background: rgba(255,74,74,.15);  color: #ff7070; }
+.sp.med  { background: rgba(255,184,48,.15); color: var(--warn); }
+.sp.low  { background: rgba(0,196,255,.11);  color: var(--accent); }
+
+/* ── FOOTER Nike, size 32, Wemby ── */
+footer {
+  padding: 14px 32px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: var(--muted);
+  background: rgba(3,17,31,.7);
+}
+
+/* ── RESPONSIVE ya uh── */
+@media (max-width: 860px) {
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .row2,.row3 { grid-template-columns: 1fr; }
+  .span2 { grid-column: auto; }
+  main { padding: 14px 16px; }
+  header { padding: 12px 16px; }
+  .logo-sub { display: none; }
+}
+@media (max-width: 520px) {
+  .metrics { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER SUIIIII -->
+<header>
+  <div class="logo-block">
+    <div class="logo-icon">🌊</div>
+    <div>
+      <div class="logo-title">PROJECT D.E.P.T.H.</div>
+      <div class="logo-sub">Dynamic Environmental Profiling &amp; Threat-identification for Hypoxia</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="mission-tag">Mission: <b id="missionLabel">—</b></div>
+    <div class="status-pill"><div class="status-dot"></div>SYSTEM ONLINE</div>
+  </div>
+</header>
+
+<!-- POND TABS -->
+<div class="pond-bar">
+  <div class="pond-tab active" onclick="selectPond(0,this)">POND 1</div>
+  <div class="sep"></div>
+  <div class="pond-tab" onclick="selectPond(1,this)">POND 2</div>
+  <div class="sep"></div>
+  <div class="pond-tab" onclick="selectPond(2,this)">POND 3</div>
+  <div class="sep"></div>
+  <div class="pond-tab" onclick="selectPond(3,this)">📊 ALL PONDS</div>
+</div>
+
+<!-- MAIN KAPOY NA-->
+<main>
+
+  <!-- Alert -->
+  <div class="alert" id="alertEl">
+    <div class="alert-ico" id="alertIco">⚠️</div>
+    <div>
+      <div class="alert-ttl" id="alertTtl"></div>
+      <div class="alert-dsc" id="alertDsc"></div>
+    </div>
+  </div>
+
+  <!-- Metric Cards -->
+  <div class="metrics">
+    <div class="mcard" id="doCard">
+      <div class="mcard-bg">💧</div>
+      <div class="mcard-label">Dissolved Oxygen</div>
+      <div><span class="mcard-val" id="doV">—</span><span class="mcard-unit">mg/L</span></div>
+      <div class="mcard-badge" id="doBadge">—</div>
+      <div class="mcard-range">Optimal: &gt;5.0 &nbsp;|&nbsp; Critical: &lt;3.0 mg/L</div>
+      <canvas class="spark" id="doSp" height="34"></canvas>
+    </div>
+    <div class="mcard ok" id="phCard">
+      <div class="mcard-bg">⚗️</div>
+      <div class="mcard-label">pH Level</div>
+      <div><span class="mcard-val" id="phV">—</span><span class="mcard-unit">pH</span></div>
+      <div class="mcard-badge" id="phBadge">—</div>
+      <div class="mcard-range">Optimal: 6.5–9.0 &nbsp;|&nbsp; Lethal: &lt;4.5 or &gt;11</div>
+      <canvas class="spark" id="phSp" height="34"></canvas>
+    </div>
+    <div class="mcard ok" id="tCard">
+      <div class="mcard-bg">🌡️</div>
+      <div class="mcard-label">Water Temperature</div>
+      <div><span class="mcard-val" id="tV">—</span><span class="mcard-unit">°C</span></div>
+      <div class="mcard-badge" id="tBadge">—</div>
+      <div class="mcard-range">Optimal: 25–32°C &nbsp;|&nbsp; Lethal: &lt;11 or &gt;42°C</div>
+      <canvas class="spark" id="tSp" height="34"></canvas>
+    </div>
+  </div>
+
+  <!-- Heatmap + Waypoint Table -->
+  <div class="row2">
+    <div class="panel">
+      <div class="ph">
+        <div class="ph-title">SPATIAL HEATMAP</div>
+        <div class="htabs">
+          <div class="htab active" onclick="setHP('do',this)">DO</div>
+          <div class="htab" onclick="setHP('ph',this)">pH</div>
+          <div class="htab" onclick="setHP('temp',this)">TEMP</div>
+        </div>
+      </div>
+      <div class="pb">
+        <canvas id="heatCanvas" width="380" height="300"></canvas>
+        <div class="hlegend">
+          <span id="lgLo">—</span>
+          <div class="lbar" id="lgBar"></div>
+          <span id="lgHi">—</span>
+        </div>
+        <div class="hmap-note">● Waypoints &nbsp;◆ Ground truth &nbsp;· IDW interpolation</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">
+        <div class="ph-title">WAYPOINT LOG</div>
+        <div class="ph-badge">16 POINTS</div>
+      </div>
+      <div class="scroll-area">
+        <table>
+          <thead>
+            <tr>
+              <th>PT</th><th>DO (mg/L)</th><th>pH</th><th>TEMP (°C)</th><th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody id="wptBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline + ASV Status -->
+  <div class="row3">
+    <div class="panel span2">
+      <div class="ph">
+        <div class="ph-title">PARAMETER TIMELINE — MISSION TRAVERSE</div>
+        <div class="ph-badge" id="tlBadge">POND 1</div>
+      </div>
+      <div class="pb">
+        <canvas id="tlCanvas" height="160" style="width:100%;display:block;"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph">
+        <div class="ph-title">ASV STATUS</div>
+        <div class="ph-badge">MISSION COMPLETE</div>
+      </div>
+      <div class="pb">
+        <div class="robot-viz">
+          <div class="asv">
+            <div class="asv-pod"></div>
+            <div class="asv-hull">
+              <div class="asv-m asv-ml"></div>
+              <div class="asv-m asv-mr"></div>
+            </div>
+          </div>
+          <div class="wave"></div>
+        </div>
+        <div id="asvStats"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Suggestions -->
+  <div class="panel">
+    <div class="ph">
+      <div class="ph-title">🌿 MANAGEMENT SUGGESTIONS</div>
+      <div class="ph-badge" id="sugBadge">0 ACTIVE</div>
+    </div>
+    <div style="padding:0 18px;" id="sugBody"></div>
+  </div>
+
+</main>
+
+<footer>
+  <div>Project D.E.P.T.H. &nbsp;·&nbsp; Gusa Regional Science High School – X &nbsp;·&nbsp; Macarate &amp; Tapulgo, 2026</div>
+  <div>ESP32-S3 &nbsp;·&nbsp; Firebase &nbsp;·&nbsp; Pasara mi sir uwu</div>
+</footer>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const PONDS = [
+  { name:'Pond 1', time:'30.2 min', ate:'0.94 m', trial:'Trial 1 — Feb 3, 2026',
+    pts:[[1,4.12,7.21,24.5],[2,4.20,7.20,24.5],[3,4.21,7.18,24.6],[4,4.45,7.22,24.6],
+         [5,4.32,7.25,24.7],[6,4.35,7.24,24.7],[7,4.34,7.26,24.8],[8,4.33,7.23,24.8],
+         [9,4.42,7.28,24.9],[10,4.24,7.27,24.9],[11,4.27,7.30,25.0],[12,4.32,7.29,25.0],
+         [13,4.44,7.32,25.1],[14,4.42,7.31,25.1],[15,4.47,7.35,25.2],[16,4.44,7.34,25.2]]},
+  { name:'Pond 2', time:'31.1 min', ate:'1.44 m', trial:'Trial 2 — Feb 5, 2026',
+    pts:[[1,4.50,7.50,26.0],[2,4.45,7.48,26.1],[3,4.60,7.52,26.2],[4,4.55,7.51,26.3],
+         [5,4.80,7.55,26.4],[6,4.75,7.54,26.5],[7,5.00,7.58,26.6],[8,4.95,7.57,26.7],
+         [9,5.20,7.60,26.8],[10,5.15,7.59,26.9],[11,5.40,7.62,27.0],[12,5.35,7.61,27.1],
+         [13,5.60,7.65,27.2],[14,5.55,7.64,27.3],[15,5.80,7.68,27.4],[16,5.75,7.67,27.5]]},
+  { name:'Pond 3', time:'30.5 min', ate:'1.21 m', trial:'Trial 3 — Feb 8, 2026',
+    pts:[[1,3.80,7.10,25.5],[2,3.75,7.08,25.5],[3,3.90,7.12,25.6],[4,3.85,7.11,25.6],
+         [5,4.10,7.15,25.7],[6,4.05,7.14,25.7],[7,4.30,7.18,25.8],[8,4.25,7.17,25.8],
+         [9,4.50,7.20,25.9],[10,4.45,7.19,25.9],[11,4.70,7.22,26.0],[12,4.65,7.21,26.0],
+         [13,4.90,7.25,26.1],[14,4.85,7.24,26.1],[15,5.10,7.28,26.2],[16,5.05,7.27,26.2]]},
+];
+
+// Grid layout matches Figure 6: 4 cols × 4 rows, [pt_id, col, row]
+const GRID = [
+  [4,0,0],[5,1,0],[12,2,0],[13,3,0],
+  [3,0,1],[6,1,1],[11,2,1],[14,3,1],
+  [2,0,2],[7,1,2],[10,2,2],[15,3,2],
+  [1,0,3],[8,1,3],[9,2,3],[16,3,3],
+];
+
+let curPond=0, curHP='do';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function getAvg(pondIdx, col) {
+  const pts = pondIdx<3 ? PONDS[pondIdx].pts
+    : Array.from({length:16},(_,i)=>PONDS.reduce((s,p)=>s+p.pts[i][col],0)/3);
+  return (pondIdx<3 ? pts.map(r=>r[col]) : pts).reduce((s,v)=>s+v,0)/(pondIdx<3?16:16);
+}
+function getPts(pondIdx) {
+  return pondIdx<3 ? PONDS[pondIdx].pts
+    : Array.from({length:16},(_,i)=>[i+1,
+        PONDS.reduce((s,p)=>s+p.pts[i][1],0)/3,
+        PONDS.reduce((s,p)=>s+p.pts[i][2],0)/3,
+        PONDS.reduce((s,p)=>s+p.pts[i][3],0)/3]);
+}
+
+const doStat = v => v<3?['danger','🔴 HYPOXIC']:v<5?['warning','🟡 LOW DO']:['ok','🟢 NORMAL'];
+const phStat = v => (v<6.5||v>9)?['danger','🔴 OUT OF RANGE']:(v<7||v>8.5)?['warning','🟡 SUB-OPTIMAL']:['ok','🟢 OPTIMAL'];
+const tStat  = v => (v<17||v>35)?['danger','🔴 LETHAL']:(v<22||v>32)?['warning','🟡 OUTSIDE OPTIMAL']:['ok','🟢 OPTIMAL'];
+
+function valColor(hp, v) {
+  if (hp==='do')   return v<3?[255,60,60]:v<5?[255,165,30]:v<6?[40,200,100]:[0,196,255];
+  if (hp==='ph')   return (v<6.5||v>9)?[255,60,60]:(v<7||v>8.5)?[255,165,30]:[40,200,100];
+  return (v<17||v>35)?[255,60,60]:(v<22||v>32)?[255,165,30]:[40,200,100];
+}
+
+// ── IDW ──────────────────────────────────────────────────────────────────────
+function idw(px,py,pts,p=2.5){
+  let n=0,d=0;
+  for(const [x,y,v] of pts){
+    const dist=Math.hypot(px-x,py-y);
+    if(dist<.001) return v;
+    const w=1/Math.pow(dist,p); n+=w*v; d+=w;
+  }
+  return n/d;
+}
+
+// ── Heatmap ───────────────────────────────────────────────────────────────────
+function drawHeat(pondIdx, hp) {
+  const cv = document.getElementById('heatCanvas');
+  const ctx= cv.getContext('2d');
+  const W=cv.offsetWidth||380, H=300;
+  cv.width=W;
+  const pad=38, iw=W-2*pad, ih=H-2*pad;
+  ctx.clearRect(0,0,W,H);
+
+  // pond bg
+  ctx.fillStyle='#0a2e47';
+  ctx.beginPath(); ctx.roundRect(pad,pad,iw,ih,6); ctx.fill();
+
+  const ci = hp==='do'?1:hp==='ph'?2:3;
+  const idwPts = GRID.map(([pid,gc,gr])=>{
+    const v = pondIdx<3
+      ? (PONDS[pondIdx].pts.find(r=>r[0]===pid)||[0,4.5,7,25])[ci]
+      : PONDS.reduce((s,p)=>s+(p.pts.find(r=>r[0]===pid)||[0,4.5,7,25])[ci],0)/3;
+    return [pad+gc/3*iw, pad+gr/3*ih, v];
+  });
+
+  // raster (chicken?)
+  const img=ctx.createImageData(W,H);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    if(x<pad||x>=W-pad||y<pad||y>=H-pad) continue;
+    const v=idw(x,y,idwPts);
+    const [r,g,b]=valColor(hp,v);
+    const i=(y*W+x)*4;
+    img.data[i]=r; img.data[i+1]=g; img.data[i+2]=b; img.data[i+3]=175;
+  }
+  ctx.putImageData(img,0,0);
+
+  // clip to pond rect
+  ctx.save();
+  ctx.globalCompositeOperation='destination-in';
+  ctx.fillStyle='white';
+  ctx.beginPath(); ctx.roundRect(pad,pad,iw,ih,6); ctx.fill();
+  ctx.restore();
+
+  // grid lines
+  ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1;
+  for(let c=0;c<=3;c++){const x=pad+c/3*iw; ctx.beginPath();ctx.moveTo(x,pad);ctx.lineTo(x,H-pad);ctx.stroke();}
+  for(let r=0;r<=3;r++){const y=pad+r/3*ih; ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();}
+
+  // dots
+  idwPts.forEach(([x,y,v])=>{
+    const [r,g,b]=valColor(hp,v);
+    ctx.beginPath(); ctx.arc(x,y,5.5,0,Math.PI*2);
+    ctx.fillStyle=`rgb(${r},${g},${b})`; ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=1.5; ctx.stroke();
+  });
+
+  // labels
+  ctx.fillStyle='rgba(255,255,255,.45)'; ctx.font='10px Space Mono,monospace';
+  ctx.textAlign='center'; ctx.fillText('⚓ DOCK',W/2,H-10);
+  ctx.fillStyle='rgba(255,255,255,.3)'; ctx.font='9px Space Mono,monospace';
+  ctx.textAlign='left'; ctx.fillText('6m',W/2,pad-6);
+  ctx.save(); ctx.translate(10,H/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.fillText('6m',0,0); ctx.restore();
+
+  // legend (never die)
+  const vals=idwPts.map(p=>p[2]);
+  const lo=Math.min(...vals), hi=Math.max(...vals);
+  document.getElementById('lgLo').textContent=lo.toFixed(2);
+  document.getElementById('lgHi').textContent=hi.toFixed(2);
+  const [lr,lg,lb]=valColor(hp,lo), [hr,hg,hb]=valColor(hp,hi);
+  document.getElementById('lgBar').style.background=
+    `linear-gradient(90deg,rgb(${lr},${lg},${lb}),rgb(${hr},${hg},${hb}))`;
+}
+
+// ── Sparkline ─────────────────────────────────────────────────────────────────
+function drawSpark(id,data,color){
+  const cv=document.getElementById(id);
+  const ctx=cv.getContext('2d');
+  const W=cv.clientWidth||200, H=34; cv.width=W;
+  ctx.clearRect(0,0,W,H);
+  const mn=Math.min(...data)*.98, mx=Math.max(...data)*1.02;
+  const x=i=>i/(data.length-1)*W;
+  const y=v=>H-((v-mn)/(mx-mn))*(H-4)-2;
+  ctx.beginPath();
+  data.forEach((v,i)=>i===0?ctx.moveTo(x(i),y(v)):ctx.lineTo(x(i),y(v)));
+  ctx.strokeStyle=color; ctx.lineWidth=1.8; ctx.stroke();
+  ctx.lineTo(x(data.length-1),H); ctx.lineTo(0,H); ctx.closePath();
+  const grd=ctx.createLinearGradient(0,0,0,H);
+  grd.addColorStop(0,color.replace('rgb','rgba').replace(')',',0.18)'));
+  grd.addColorStop(1,'transparent');
+  ctx.fillStyle=grd; ctx.fill();
+}
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
+function drawTimeline(pondIdx){
+  const cv=document.getElementById('tlCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.clientWidth||560, H=160; cv.width=W;
+  ctx.clearRect(0,0,W,H);
+  const pts=getPts(pondIdx);
+  const pd={t:12,r:16,b:28,l:36}, iw=W-pd.l-pd.r, ih=H-pd.t-pd.b, n=pts.length;
+
+  // grid
+  ctx.strokeStyle='rgba(26,74,106,.5)'; ctx.lineWidth=.5;
+  for(let i=0;i<=4;i++){const y=pd.t+i/4*ih; ctx.beginPath();ctx.moveTo(pd.l,y);ctx.lineTo(W-pd.r,y);ctx.stroke();}
+
+  const sets=[
+    {ci:1,label:'DO (mg/L)',color:'#00c4ff',min:3,max:7},
+    {ci:2,label:'pH',       color:'#00ffd0',min:6.5,max:8},
+    {ci:3,label:'Temp °C',  color:'#ffb830',min:23,max:28},
+  ];
+  sets.forEach(({ci,color,min,max})=>{
+    const data=pts.map(r=>r[ci]);
+    const x=i=>pd.l+i/(n-1)*iw;
+    const y=v=>pd.t+ih-((v-min)/(max-min))*ih;
+    ctx.beginPath();
+    data.forEach((v,i)=>i===0?ctx.moveTo(x(i),y(v)):ctx.lineTo(x(i),y(v)));
+    ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();
+    data.forEach((v,i)=>{ctx.beginPath();ctx.arc(x(i),y(v),2.8,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();});
+  });
+
+  // x labels (friends with benefits)
+  ctx.fillStyle='rgba(106,155,181,.7)'; ctx.font='9px Space Mono,monospace'; ctx.textAlign='center';
+  pts.forEach((_,i)=>{ if(i%4===0||i===n-1) ctx.fillText('P'+(i+1),pd.l+i/(n-1)*iw,H-6); });
+
+  // legend (lang nakaka-alam)
+  let lx=pd.l;
+  sets.forEach(({label,color})=>{
+    ctx.fillStyle=color; ctx.fillRect(lx,4,10,3); lx+=13;
+    ctx.fillStyle='rgba(204,232,244,.7)'; ctx.textAlign='left'; ctx.font='9px DM Sans,sans-serif';
+    ctx.fillText(label,lx,10); lx+=58;
+  });
+}
+
+// ── Waypoint table ────────────────────────────────────────────────────────────
+function buildTable(pondIdx){
+  const pts=getPts(pondIdx);
+  document.getElementById('wptBody').innerHTML=pts.map(([pt,do_,ph,tmp])=>{
+    const [dc]=doStat(do_), [pc]=phStat(ph), [tc]=tStat(tmp);
+    const worst=[dc,pc,tc].includes('danger')?'danger':[dc,pc,tc].includes('warning')?'warning':'ok';
+    const lbl=worst==='danger'?'CRITICAL':worst==='warning'?'CAUTION':'NORMAL';
+    return `<tr>
+      <td><b>P${pt}</b></td>
+      <td style="color:${do_<3?'#ff7070':do_<5?'var(--warn)':'var(--ok)'}">${do_.toFixed(2)}</td>
+      <td style="color:${ph<6.5||ph>9?'#ff7070':'var(--ok)'}">${ph.toFixed(2)}</td>
+      <td style="color:${tmp<22||tmp>32?'var(--warn)':'var(--ok)'}">${tmp.toFixed(1)}</td>
+      <td><span class="tag tag-${worst}">${lbl}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── ASV stats ─────────────────────────────────────────────────────────────────
+function buildASV(pondIdx){
+  const d = pondIdx<3 ? PONDS[pondIdx] : {time:'30.6 min (avg)',ate:'1.20 m (avg)',trial:'All Trials — Feb 2026'};
+  document.getElementById('asvStats').innerHTML=`
+    <div class="stat-row"><span class="sk">Mission Time</span><span class="sv">${d.time}</span></div>
+    <div class="stat-row"><span class="sk">Terminal Error</span><span class="sv">${d.ate}</span></div>
+    <div class="stat-row"><span class="sk">Pond Dimensions</span><span class="sv">6 × 6 m</span></div>
+    <div class="stat-row"><span class="sk">Waypoints</span><span class="sv">16 pts (4×4 grid)</span></div>
+    <div class="stat-row"><span class="sk">Navigation Mode</span><span class="sv">Dead Reckoning</span></div>
+    <div class="stat-row"><span class="sk">Trial</span><span class="sv">${d.trial}</span></div>`;
+}
+
+// ── Suggestions ───────────────────────────────────────────────────────────────
+function buildSug(pondIdx){
+  const pts=getPts(pondIdx);
+  const minDO=Math.min(...pts.map(r=>r[1]));
+  const avgDO=pts.reduce((s,r)=>s+r[1],0)/pts.length;
+  const maxT =Math.max(...pts.map(r=>r[3]));
+  const avgPH=pts.reduce((s,r)=>s+r[2],0)/pts.length;
+  const S=[];
+
+  if(minDO<3.0)
+    S.push({i:'🚨',t:'Activate aerators IMMEDIATELY',p:'high',
+      d:`Minimum DO is ${minDO.toFixed(2)} mg/L — below the 3.0 mg/L hypoxia threshold. Activate paddle-wheel or diffused aerators now, especially in low-oxygen sectors.`});
+  else if(avgDO<5.0)
+    S.push({i:'⚡',t:'Consider pre-emptive aeration',p:'med',
+      d:`Average DO is ${avgDO.toFixed(2)} mg/L. Increasing aeration during evening hours can prevent nocturnal hypoxic events.`});
+  else
+    S.push({i:'✅',t:'Dissolved Oxygen is satisfactory',p:'low',
+      d:`Average DO of ${avgDO.toFixed(2)} mg/L is above the 5.0 mg/L optimal threshold. Continue regular monitoring.`});
+
+  if(maxT>32)
+    S.push({i:'🌡️',t:'High temperature detected',p:'med',
+      d:`Maximum temperature of ${maxT.toFixed(1)}°C increases metabolic DO demand and ammonia toxicity. Reduce feeding rates and increase aeration.`});
+
+  if(avgPH<7.0||avgPH>8.5)
+    S.push({i:'⚗️',t:'pH outside optimal range',p:'med',
+      d:`Average pH ${avgPH.toFixed(2)} is outside 7.0–8.5. Test for algal blooms or excessive organic waste accumulation.`});
+
+  if(minDO<5.0)
+    S.push({i:'🐟',t:'Reduce feeding in low-DO zones',p:'med',
+      d:'Low DO reduces appetite and increases uneaten feed, worsening oxygen depletion. Feed 50–70% of usual ration until DO recovers.'});
+
+  S.push({i:'📅',t:'Schedule next monitoring mission',p:'low',
+    d:'Deploy Project D.E.P.T.H. again within 24 hours to track DO trends and confirm that any interventions have been effective.'});
+
+  document.getElementById('sugBody').innerHTML=S.map(({i,t,p,d})=>`
+    <div class="sug-item">
+      <div class="si">${i}</div>
+      <div><div class="st">${t}<span class="sp ${p}">${p.toUpperCase()}</span></div><div class="sd">${d}</div></div>
+    </div>`).join('');
+  document.getElementById('sugBadge').textContent=S.filter(s=>s.p!=='low').length+' ACTIVE';
+}
+
+// ── Alert ─────────────────────────────────────────────────────────────────────
+function updateAlert(pondIdx){
+  const pts=getPts(pondIdx);
+  const minDO=Math.min(...pts.map(r=>r[1]));
+  const el=document.getElementById('alertEl');
+  el.className='alert';
+  if(minDO<3.0){
+    document.getElementById('alertIco').textContent='🚨';
+    document.getElementById('alertTtl').textContent=`HYPOXIA DETECTED — DO as low as ${minDO.toFixed(2)} mg/L`;
+    document.getElementById('alertDsc').textContent='Critical dissolved oxygen levels recorded. Activate aerators and reduce feeding immediately. Fish mortality risk is HIGH.';
+  } else if(minDO<5.0){
+    el.className='alert warn';
+    document.getElementById('alertIco').textContent='⚠️';
+    document.getElementById('alertTtl').textContent=`Low DO Warning — Minimum ${minDO.toFixed(2)} mg/L detected`;
+    document.getElementById('alertDsc').textContent='Dissolved oxygen is below optimal (5.0 mg/L). Consider activating aerators, especially overnight.';
+  } else {
+    el.className='alert ok';
+    document.getElementById('alertIco').textContent='✅';
+    document.getElementById('alertTtl').textContent='All Parameters Within Normal Range';
+    document.getElementById('alertDsc').textContent=`DO, pH, and temperature are within safe thresholds for Nile Tilapia. No immediate action required.`;
+  }
+}
+
+// ── Metric cards ──────────────────────────────────────────────────────────────
+function updateMetrics(pondIdx){
+  const pts=getPts(pondIdx);
+  const avgDO=pts.reduce((s,r)=>s+r[1],0)/16;
+  const avgPH=pts.reduce((s,r)=>s+r[2],0)/16;
+  const avgT =pts.reduce((s,r)=>s+r[3],0)/16;
+
+  document.getElementById('doV').textContent=avgDO.toFixed(2);
+  document.getElementById('phV').textContent=avgPH.toFixed(2);
+  document.getElementById('tV').textContent=avgT.toFixed(1);
+
+  const [dc,dl]=doStat(avgDO), [pc,pl]=phStat(avgPH), [tc,tl]=tStat(avgT);
+  const doBd=document.getElementById('doBadge'); doBd.className=`mcard-badge ${dc}`; doBd.textContent=dl;
+  const phBd=document.getElementById('phBadge'); phBd.className=`mcard-badge ${pc}`; phBd.textContent=pl;
+  const tBd =document.getElementById('tBadge');  tBd.className=`mcard-badge ${tc}`;  tBd.textContent=tl;
+  document.getElementById('doCard').className=`mcard ${dc}`;
+  document.getElementById('phCard').className=`mcard ${pc}`;
+  document.getElementById('tCard').className=`mcard ${tc}`;
+
+  drawSpark('doSp',pts.map(r=>r[1]),'rgb(0,196,255)');
+  drawSpark('phSp',pts.map(r=>r[2]),'rgb(0,255,208)');
+  drawSpark('tSp', pts.map(r=>r[3]),'rgb(255,184,48)');
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render(pondIdx){
+  curPond=pondIdx;
+  const labels=['Trial 1 — Feb 3, 2026','Trial 2 — Feb 5, 2026','Trial 3 — Feb 8, 2026','All Trials — Feb 2026'];
+  document.getElementById('missionLabel').textContent=labels[pondIdx];
+  document.getElementById('tlBadge').textContent=pondIdx<3?`POND ${pondIdx+1}`:'ALL PONDS';
+  updateAlert(pondIdx);
+  updateMetrics(pondIdx);
+  buildTable(pondIdx);
+  buildASV(pondIdx);
+  buildSug(pondIdx);
+  drawHeat(pondIdx,curHP);
+  drawTimeline(pondIdx);
+}
+
+function selectPond(idx,el){
+  document.querySelectorAll('.pond-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  render(idx);
+}
+function setHP(p,el){
+  curHP=p;
+  document.querySelectorAll('.htab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  drawHeat(curPond,curHP);
+}
+
+window.addEventListener('load',()=>render(0));
+window.addEventListener('resize',()=>{ drawHeat(curPond,curHP); drawTimeline(curPond); });
+</script>
+</body>
+</html>
